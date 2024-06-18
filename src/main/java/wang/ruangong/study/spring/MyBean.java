@@ -1,5 +1,6 @@
 package wang.ruangong.study.spring;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -9,7 +10,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.DisposableBean;
 
-public class MyBean implements BeanNameAware, BeanFactoryAware, ApplicationContextAware, InitializingBean, DisposableBean {
+public class MyBean implements BeanNameAware, BeanFactoryAware,InitializingBean, ApplicationContextAware, DisposableBean {
 
     private String name;
 
@@ -32,11 +33,14 @@ public class MyBean implements BeanNameAware, BeanFactoryAware, ApplicationConte
         System.out.println("ApplicationContextAware: setApplicationContext called");
     }
 
+    @PostConstruct
+    public void postConstruct() {
+        System.out.println("PostConstruct: afterPropertiesSet called");
+    }
     @Override
     public void afterPropertiesSet() throws Exception {
         System.out.println("InitializingBean: afterPropertiesSet called");
     }
-
     public void customInit() {
         System.out.println("Custom init-method: customInit called");
     }
@@ -49,4 +53,6 @@ public class MyBean implements BeanNameAware, BeanFactoryAware, ApplicationConte
     public void customDestroy() {
         System.out.println("Custom destroy-method: customDestroy called");
     }
+
+
 }

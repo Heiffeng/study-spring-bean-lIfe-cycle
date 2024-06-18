@@ -14,32 +14,51 @@
 ```java
 @Override
 public void setBeanName(String beanName) {
-    System.out.println("BeanNameAware: setBeanName called with name " + beanName);
-}
+        System.out.println("BeanNameAware: setBeanName called with name " + beanName);
+        }
 
 @Override
 public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-    System.out.println("BeanFactoryAware: setBeanFactory called");
-}
+        System.out.println("BeanFactoryAware: setBeanFactory called");
+        }
 ```
 
 ## 2. 初始化阶段（Initialization）
+
 
 初始化阶段是 Bean 生命周期中最复杂的阶段，它包括属性设置、依赖注入和初始化方法的调用。该阶段包括以下关键步骤：
 
 - **属性设置和依赖注入**：Spring 容器根据配置文件或注解，将配置的属性值或依赖对象注入到 Bean 实例中。
 - **BeanPostProcessor 的 `postProcessBeforeInitialization` 方法**：Spring 调用所有注册的 `BeanPostProcessor` 实现的 `postProcessBeforeInitialization` 方法，以便在 Bean 初始化前对其进行处理。
 - **InitializingBean 接口和自定义初始化方法**：如果 Bean 实现了 `InitializingBean` 接口，Spring 将调用其 `afterPropertiesSet` 方法。此外，如果配置了自定义的初始化方法，Spring 也会调用该方法。
+- **`@PostConstruct` 注解**：如果 Bean 的某个方法使用了 `@PostConstruct` 注解，Spring 容器将在依赖注入完成后调用该方法。`@PostConstruct` 注解用于标注在依赖注入完成后需要执行的初始化方法，比实现 `InitializingBean` 接口更加灵活和通用。
 - **BeanPostProcessor 的 `postProcessAfterInitialization` 方法**：Spring 调用所有注册的 `BeanPostProcessor` 实现的 `postProcessAfterInitialization` 方法，以便在 Bean 初始化后对其进行处理。
 
 ```java
-@Override
-public void afterPropertiesSet() throws Exception {
-    System.out.println("InitializingBean: afterPropertiesSet called");
-}
+import javax.annotation.PostConstruct;
 
-public void customInit() {
-    System.out.println("Custom init-method: customInit called");
+public class MyBean {
+
+    private String name;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @PostConstruct
+    public void init() {
+        System.out.println("PostConstruct: init method called");
+        this.name = "Initialized Bean";
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        System.out.println("InitializingBean: afterPropertiesSet called");
+    }
+
+    public void customInit() {
+        System.out.println("Custom init-method: customInit called");
+    }
 }
 ```
 
@@ -114,6 +133,12 @@ public class MyBean implements BeanNameAware, BeanFactoryAware, ApplicationConte
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         System.out.println("ApplicationContextAware: setApplicationContext called");
+    }
+
+    @PostConstruct
+    public void init() {
+        System.out.println("PostConstruct: init method called");
+        this.name = "Initialized Bean";
     }
 
     @Override
@@ -196,7 +221,7 @@ public class SpringLifecycleDemo {
 
     public static void main(String[] args) {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
-        
+
         MyBean myBean = context.getBean(MyBean.class);
         System.out.println("Using MyBean: " + myBean);
 
